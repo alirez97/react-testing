@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import TermsAndConditions from '../../src/components/TermsAndConditions';
 
 describe('TermsAndConditions', () => {
-  it('should render with correct text and initial useState', () => {
+  it('should render with correct text and initial state', () => {
     render(<TermsAndConditions />);
 
     const heading = screen.getByRole('heading');
