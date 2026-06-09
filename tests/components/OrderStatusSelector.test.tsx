@@ -4,29 +4,32 @@ import userEvent from '@testing-library/user-event';
 import OrderStatusSelector from '../../src/components/OrderStatusSelector';
 
 describe('OrderStatusSelector', () => {
-  it('should render New as the default value', () => {
+  const renderComponent = () => {
     render(
       <Theme>
         <OrderStatusSelector onChange={vi.fn()} />
       </Theme>,
     );
 
-    const button = screen.getByRole('combobox');
+    return {
+      button: screen.getByRole('combobox'),
+      getOptions: () => screen.findAllByRole('option'),
+    };
+  };
+
+  it('should render New as the default value', () => {
+    const { button } = renderComponent();
+
     expect(button).toHaveTextContent('New');
   });
 
   it('should render correct statuses', async () => {
-    render(
-      <Theme>
-        <OrderStatusSelector onChange={vi.fn()} />
-      </Theme>,
-    );
+    const { button, getOptions } = renderComponent();
 
-    const button = screen.getByRole('combobox');
     const user = userEvent.setup();
     await user.click(button);
 
-    const options = await screen.findAllByRole('option');
+    const options = await getOptions();
     expect(options).toHaveLength(3);
     const labels = options.map((option) => option.textContent);
     expect(labels).toEqual(['New', 'Processed', 'Fulfilled']);
