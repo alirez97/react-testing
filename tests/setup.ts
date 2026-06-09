@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom/vitest';
 
+globalThis.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({
@@ -13,3 +19,7 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: vi.fn(),
   })),
 });
+
+window.HTMLElement.prototype.scrollIntoView = vi.fn();
+window.HTMLElement.prototype.hasPointerCapture = vi.fn();
+window.HTMLElement.prototype.releasePointerCapture = vi.fn();
