@@ -1,21 +1,19 @@
-import { useEffect, useState } from "react";
-import { Product } from "../entities";
+import { useEffect, useState } from 'react';
+import { Product } from '../entities';
 
 const ProductDetail = ({ productId }: { productId: number }) => {
-  const [product, setProduct] = useState<Product | undefined>(
-    undefined
-  );
+  const [product, setProduct] = useState<Product | undefined>(undefined);
   const [isLoading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (!productId) {
-      setError("Invalid ProductId");
+      setError('Invalid ProductId');
       return;
     }
 
     setLoading(true);
-    fetch("/products/" + productId)
+    fetch('/products/' + productId)
       .then((res) => res.json())
       .then((data) => setProduct(data))
       .catch((err) => setError((err as Error).message))
