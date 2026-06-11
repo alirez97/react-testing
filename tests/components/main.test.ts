@@ -1,9 +1,9 @@
-describe('group', () => {
-  it('should', async () => {
-    const response = await fetch('/categories');
-    const data = await response.json();
+import { db } from '../mocks/db';
 
-    console.log(data);
-    expect(data).toHaveLength(3);
+describe('group', () => {
+  it('should', () => {
+    db.product.create();
+    db.product.create();
+    console.log(db.product.getAll());
   });
 });

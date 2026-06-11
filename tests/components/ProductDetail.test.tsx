@@ -1,10 +1,21 @@
 import { render, screen } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import ProductDetail from '../../src/components/ProductDetail';
-import { products } from '../mocks/data';
+import { db } from '../mocks/db';
 import { server } from '../mocks/server';
 
 describe('ProductDetail', () => {
+  let productId: number;
+
+  beforeAll(() => {
+    const product = db.product.create();
+    productId = product.id;
+  });
+
+  afterAll(() => {
+    db.product.deleteMany({ where: { id: { equals: productId } } });
+  });
+
   it('should render an error for invalid product id', () => {
     render(<ProductDetail productId={0} />);
 
@@ -20,19 +31,21 @@ describe('ProductDetail', () => {
   });
 
   it('should render product Detail', async () => {
-    const [product] = products;
+    const product = db.product.findFirst({
+      where: { id: { equals: productId } },
+    });
 
-    render(<ProductDetail productId={product.id} />);
+    render(<ProductDetail productId={productId} />);
 
     const heading = await screen.findByRole('heading', {
       name: /product detail/i,
     });
     expect(heading).toBeInTheDocument();
 
-    const name = screen.getByText(new RegExp(product.name));
+    const name = screen.getByText(new RegExp(product!.name));
     expect(name).toBeInTheDocument();
 
-    const price = screen.getByText(new RegExp(product.price.toString()));
+    const price = screen.getByText(new RegExp(product!.price.toString()));
     expect(price).toBeInTheDocument();
   });
 });
