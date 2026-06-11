@@ -48,4 +48,12 @@ describe('ProductDetail', () => {
     const price = screen.getByText(new RegExp(product!.price.toString()));
     expect(price).toBeInTheDocument();
   });
+
+  it('should render an error message if data fetching fails', async () => {
+    server.use(http.get('/products/:id', () => HttpResponse.error()));
+
+    render(<ProductDetail productId={productId} />);
+
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
+  });
 });
