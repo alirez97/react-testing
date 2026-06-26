@@ -4,11 +4,27 @@ import {
   screen,
   waitForElementToBeRemoved,
 } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { delay, http, HttpResponse } from 'msw';
+import { Category } from '../../src/entities';
 import BrowseProducts from '../../src/pages/BrowseProductsPage';
+import { db } from '../mocks/db';
 import { server } from '../mocks/server';
 
 describe('BrowseProductsPage', () => {
+  const categories: Category[] = [];
+
+  beforeAll(() => {
+    [1, 2, 3].forEach(() => {
+      categories.push(db.category.create());
+    });
+  });
+
+  afterAll(() => {
+    const categoryIds = categories.map((c) => c.id);
+    db.category.deleteMany({ where: { id: { in: categoryIds } } });
+  });
+
   const renderComponent = () => {
     render(
       <Theme>
@@ -82,5 +98,23 @@ describe('BrowseProductsPage', () => {
     renderComponent();
 
     expect(await screen.findByText(/error/i)).toBeInTheDocument();
+  });
+
+  it('should render categories', async () => {
+    renderComponent();
+
+    const combobox = await screen.findByRole('combobox');
+
+    const user = userEvent.setup();
+    await user.click(combobox);
+
+    screen.debug();
+
+    expect(screen.getByRole('option', { name: /all/i })).toBeInTheDocument();
+    categories.forEach((category) => {
+      expect(
+        screen.getByRole('option', { name: category.name }),
+      ).toBeInTheDocument();
+    });
   });
 });
