@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom/vitest';
+import { setLogger } from 'react-query';
 import { server } from './mocks/server';
 
 beforeAll(() => server.listen());
@@ -28,3 +29,9 @@ Object.defineProperty(window, 'matchMedia', {
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
 window.HTMLElement.prototype.hasPointerCapture = vi.fn();
 window.HTMLElement.prototype.releasePointerCapture = vi.fn();
+
+setLogger({
+  log: console.log,
+  warn: console.warn,
+  error: () => {}, // suppress errors in tests
+});
