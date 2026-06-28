@@ -61,21 +61,14 @@ describe('ProductForm', () => {
   ])(
     'should display an error if name is $scenario',
     async ({ name, errorMessage }) => {
-      const { waitForFormToLoad } = renderComponent();
+      const { waitForFormToLoad, expectErrorToBeInTheDocument } =
+        renderComponent();
 
       const form = await waitForFormToLoad();
 
-      const user = userEvent.setup();
-      if (name !== undefined) await user.type(form.nameInput, name);
-      await user.type(form.priceInput, '10');
-      await user.click(form.categoryInput);
-      const options = screen.getAllByRole('option');
-      await user.click(options[0]);
-      await user.click(form.submitButton);
+      await form.fill({ ...form.validData, name });
 
-      const error = screen.getByRole('alert');
-      expect(error).toBeInTheDocument();
-      expect(error).toHaveTextContent(errorMessage);
+      expectErrorToBeInTheDocument(errorMessage);
     },
   );
 
@@ -88,22 +81,14 @@ describe('ProductForm', () => {
   ])(
     'should display an error if price is $scenario',
     async ({ price, errorMessage }) => {
-      const { waitForFormToLoad } = renderComponent();
+      const { waitForFormToLoad, expectErrorToBeInTheDocument } =
+        renderComponent();
 
       const form = await waitForFormToLoad();
 
-      const user = userEvent.setup();
-      await user.type(form.nameInput, 'a');
-      if (price !== undefined)
-        await user.type(form.priceInput, price.toString());
-      await user.click(form.categoryInput);
-      const options = screen.getAllByRole('option');
-      await user.click(options[0]);
-      await user.click(form.submitButton);
+      await form.fill({ ...form.validData, price });
 
-      const error = screen.getByRole('alert');
-      expect(error).toBeInTheDocument();
-      expect(error).toHaveTextContent(errorMessage);
+      expectErrorToBeInTheDocument(errorMessage);
     },
   );
 });
@@ -113,16 +98,56 @@ const renderComponent = (product?: Product) => {
     wrapper: AllProviders,
   });
 
-  return {
-    waitForFormToLoad: async () => {
-      await screen.findByRole('form');
+  const waitForFormToLoad = async () => {
+    await screen.findByRole('form');
 
-      return {
-        nameInput: screen.getByPlaceholderText(/name/i),
-        priceInput: screen.getByPlaceholderText(/price/i),
-        categoryInput: screen.getByRole('combobox', { name: /category/i }),
-        submitButton: screen.getByRole('button'),
-      };
-    },
+    const nameInput = screen.getByPlaceholderText(/name/i);
+    const priceInput = screen.getByPlaceholderText(/price/i);
+    const categoryInput = screen.getByRole('combobox', { name: /category/i });
+    const submitButton = screen.getByRole('button');
+
+    const validData: Product = {
+      id: 1,
+      name: 'a',
+      price: 10,
+      categoryId: 1,
+    };
+
+    type ProductData = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      [K in keyof Product]: any;
+    };
+
+    const fill = async ({ name, price }: ProductData) => {
+      const user = userEvent.setup();
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      if (name !== undefined) await user.type(nameInput, name);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      if (price !== undefined) await user.type(priceInput, price.toString());
+      await user.click(categoryInput);
+      const options = screen.getAllByRole('option');
+      await user.click(options[0]);
+      await user.click(submitButton);
+    };
+
+    return {
+      nameInput,
+      priceInput,
+      categoryInput,
+      submitButton,
+      validData,
+      fill,
+    };
+  };
+
+  const expectErrorToBeInTheDocument = (errorMessage: RegExp) => {
+    const error = screen.getByRole('alert');
+    expect(error).toBeInTheDocument();
+    expect(error).toHaveTextContent(errorMessage);
+  };
+
+  return {
+    waitForFormToLoad,
+    expectErrorToBeInTheDocument,
   };
 };
