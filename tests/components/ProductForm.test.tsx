@@ -16,41 +16,48 @@ describe('ProductForm', () => {
   });
 
   it('should render form fields', async () => {
-    render(<ProductForm onSubmit={vi.fn()} />, { wrapper: AllProviders });
+    const { waitForFormToLoad, getInputs } = renderComponent();
 
-    await screen.findByText(/loading/i);
+    await waitForFormToLoad();
 
-    expect(screen.getByPlaceholderText(/name/i)).toBeInTheDocument();
+    const { nameInput, priceInput, categoryInput } = getInputs();
 
-    expect(screen.getByPlaceholderText(/price/i)).toBeInTheDocument();
-
-    expect(
-      screen.getByRole('combobox', { name: /category/i }),
-    ).toBeInTheDocument();
+    expect(nameInput).toBeInTheDocument();
+    expect(priceInput).toBeInTheDocument();
+    expect(categoryInput).toBeInTheDocument();
   });
 
   it('should populate form fields when editing a product', async () => {
     const product: Product = {
       categoryId: category.id,
       id: 1,
-      name: 'laptop',
-      price: 1100,
+      name: 'product1',
+      price: 10,
     };
 
-    render(<ProductForm product={product} onSubmit={vi.fn()} />, {
-      wrapper: AllProviders,
-    });
+    const { waitForFormToLoad, getInputs } = renderComponent(product);
 
-    await screen.findByText(/loading/i);
+    await waitForFormToLoad();
 
-    expect(screen.getByPlaceholderText(/name/i)).toHaveValue(product.name);
+    const { nameInput, priceInput, categoryInput } = getInputs();
 
-    expect(screen.getByPlaceholderText(/price/i)).toHaveValue(
-      product.price.toString(),
-    );
-
-    expect(
-      screen.getByRole('combobox', { name: /category/i }),
-    ).toHaveTextContent(category.name);
+    expect(nameInput).toHaveValue(product.name);
+    expect(priceInput).toHaveValue(product.price.toString());
+    expect(categoryInput).toHaveTextContent(category.name);
   });
 });
+
+const renderComponent = (product?: Product) => {
+  render(<ProductForm product={product} onSubmit={vi.fn()} />, {
+    wrapper: AllProviders,
+  });
+
+  return {
+    waitForFormToLoad: () => screen.findByRole('form'),
+    getInputs: () => ({
+      nameInput: screen.getByPlaceholderText(/name/i),
+      priceInput: screen.getByPlaceholderText(/price/i),
+      categoryInput: screen.getByRole('combobox', { name: /category/i }),
+    }),
+  };
+};
