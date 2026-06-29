@@ -1,5 +1,6 @@
 import { Theme } from '@radix-ui/themes';
 import { PropsWithChildren } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { CartProvider } from '../src/providers/CartProvider';
 
@@ -11,10 +12,14 @@ const AllProviders = ({ children }: PropsWithChildren) => {
   return (
     <QueryClientProvider client={client}>
       <CartProvider>
-        <Theme>{children}</Theme>
+        <Theme>
+          {children}
+          <Toaster />
+        </Theme>
       </CartProvider>
     </QueryClientProvider>
   );
+  1;
 };
 
 export default AllProviders;

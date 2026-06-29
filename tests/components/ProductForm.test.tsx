@@ -91,63 +91,90 @@ describe('ProductForm', () => {
       expectErrorToBeInTheDocument(errorMessage);
     },
   );
-});
 
-const renderComponent = (product?: Product) => {
-  render(<ProductForm product={product} onSubmit={vi.fn()} />, {
-    wrapper: AllProviders,
+  it('should call onSubmit with the correct data', async () => {
+    const { waitForFormToLoad, onSubmit } = renderComponent();
+
+    const form = await waitForFormToLoad();
+    await form.fill(form.validData);
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...formData } = form.validData;
+
+    expect(onSubmit).toHaveBeenCalledWith(formData);
   });
 
-  const waitForFormToLoad = async () => {
-    await screen.findByRole('form');
+  it('should display a toast if submission fails', async () => {
+    const { waitForFormToLoad, onSubmit } = renderComponent();
+    onSubmit.mockRejectedValue({});
 
-    const nameInput = screen.getByPlaceholderText(/name/i);
-    const priceInput = screen.getByPlaceholderText(/price/i);
-    const categoryInput = screen.getByRole('combobox', { name: /category/i });
-    const submitButton = screen.getByRole('button');
+    const form = await waitForFormToLoad();
+    await form.fill(form.validData);
 
-    const validData: Product = {
-      id: 1,
-      name: 'a',
-      price: 10,
-      categoryId: 1,
+    const toast = screen.getByRole('status');
+    expect(toast).toBeInTheDocument();
+    expect(toast).toHaveTextContent(/error/i);
+  });
+
+  const renderComponent = (product?: Product) => {
+    const onSubmit = vi.fn();
+
+    render(<ProductForm product={product} onSubmit={onSubmit} />, {
+      wrapper: AllProviders,
+    });
+
+    const waitForFormToLoad = async () => {
+      await screen.findByRole('form');
+
+      const nameInput = screen.getByPlaceholderText(/name/i);
+      const priceInput = screen.getByPlaceholderText(/price/i);
+      const categoryInput = screen.getByRole('combobox', { name: /category/i });
+      const submitButton = screen.getByRole('button');
+
+      const validData: Product = {
+        id: 1,
+        name: 'a',
+        price: 10,
+        categoryId: category.id,
+      };
+
+      type ProductData = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        [K in keyof Product]: any;
+      };
+
+      const fill = async ({ name, price }: ProductData) => {
+        const user = userEvent.setup();
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        if (name !== undefined) await user.type(nameInput, name);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        if (price !== undefined) await user.type(priceInput, price.toString());
+        await user.click(categoryInput);
+        const options = screen.getAllByRole('option');
+        await user.click(options[0]);
+        await user.click(submitButton);
+      };
+
+      return {
+        nameInput,
+        priceInput,
+        categoryInput,
+        submitButton,
+        validData,
+        fill,
+      };
     };
 
-    type ProductData = {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      [K in keyof Product]: any;
-    };
-
-    const fill = async ({ name, price }: ProductData) => {
-      const user = userEvent.setup();
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      if (name !== undefined) await user.type(nameInput, name);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-      if (price !== undefined) await user.type(priceInput, price.toString());
-      await user.click(categoryInput);
-      const options = screen.getAllByRole('option');
-      await user.click(options[0]);
-      await user.click(submitButton);
+    const expectErrorToBeInTheDocument = (errorMessage: RegExp) => {
+      const error = screen.getByRole('alert');
+      expect(error).toBeInTheDocument();
+      expect(error).toHaveTextContent(errorMessage);
     };
 
     return {
-      nameInput,
-      priceInput,
-      categoryInput,
-      submitButton,
-      validData,
-      fill,
+      waitForFormToLoad,
+      expectErrorToBeInTheDocument,
+      onSubmit,
     };
   };
-
-  const expectErrorToBeInTheDocument = (errorMessage: RegExp) => {
-    const error = screen.getByRole('alert');
-    expect(error).toBeInTheDocument();
-    expect(error).toHaveTextContent(errorMessage);
-  };
-
-  return {
-    waitForFormToLoad,
-    expectErrorToBeInTheDocument,
-  };
-};
+});
