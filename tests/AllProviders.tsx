@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { CartProvider } from '../src/providers/CartProvider';
+import ReduxProvider from '../src/providers/ReduxProvider';
 
 const AllProviders = ({ children }: PropsWithChildren) => {
   const client = new QueryClient({
@@ -11,12 +12,14 @@ const AllProviders = ({ children }: PropsWithChildren) => {
 
   return (
     <QueryClientProvider client={client}>
-      <CartProvider>
-        <Theme>
-          {children}
-          <Toaster />
-        </Theme>
-      </CartProvider>
+      <ReduxProvider>
+        <CartProvider>
+          <Theme>
+            {children}
+            <Toaster />
+          </Theme>
+        </CartProvider>
+      </ReduxProvider>
     </QueryClientProvider>
   );
   1;
