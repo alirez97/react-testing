@@ -6,6 +6,8 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
+vi.mock('@auth0/auth0-react');
+
 globalThis.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
