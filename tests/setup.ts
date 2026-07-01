@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, ReactNode } from 'react';
 import { setLogger } from 'react-query';
 import { server } from './mocks/server';
 
@@ -14,7 +14,7 @@ vi.mock('@auth0/auth0-react', () => ({
     user: undefined,
   }),
   Auth0Provider: ({ children }: PropsWithChildren) => children,
-  withAuthenticationRequired: vi.fn(),
+  withAuthenticationRequired: (component: ReactNode) => component,
 }));
 
 globalThis.ResizeObserver = class ResizeObserver {

@@ -6,6 +6,7 @@ describe('Router', () => {
   it.each([
     { page: 'home', heading: /home/i, path: '/' },
     { page: 'products', heading: /products/i, path: '/products' },
+    { page: 'admin', heading: /admin/i, path: '/admin' },
   ])('should render the $page page for $path', ({ heading, path }) => {
     navigateTo(path);
 
