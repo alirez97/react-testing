@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react';
+import { db } from './mocks/db';
 import { navigateTo } from './utils';
 
 describe('Router', () => {
@@ -9,5 +10,17 @@ describe('Router', () => {
     navigateTo(path);
 
     expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+  });
+
+  it('should render the product details page for /products/:id', async () => {
+    const product = db.product.create();
+
+    navigateTo('/products/' + product.id);
+
+    expect(
+      await screen.findByRole('heading', { name: product.name }),
+    ).toBeInTheDocument();
+
+    db.product.delete({ where: { id: { equals: product.id } } });
   });
 });
